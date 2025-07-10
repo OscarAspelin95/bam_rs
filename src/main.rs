@@ -6,9 +6,8 @@ use bam::bam_parse;
 mod args;
 use args::get_args;
 
-mod utils;
-
 mod fasta;
+mod utils;
 
 fn main() {
     SimpleLogger::new().init().unwrap();
