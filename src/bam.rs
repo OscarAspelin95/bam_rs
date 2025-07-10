@@ -10,7 +10,7 @@ use crate::fasta::index_fasta;
 use crate::utils::u8_to_nt;
 
 // We want a lookup table for mapping ascii to nucleotides.
-static NTS: [char; 6] = ['A', 'T', 'C', 'G', 'N', '-'];
+const NTS: [char; 6] = ['A', 'T', 'C', 'G', 'N', '-'];
 
 pub fn bam_parse(args: &CommandArgs) {
     // Bam reading
@@ -28,8 +28,8 @@ pub fn bam_parse(args: &CommandArgs) {
 
     let fasta_index = index_fasta(&faidx_reader, &seq_names);
 
-    // Consider using next_chunks here if possible (probably not), will probably
-    // enable running with Rayon for parallel processing.
+    // TODO - use rayon for multiprocessing.
+    // to make this work, use channel to send results.
 
     // A given position in the reference sequence.
     while let Some(Ok(pileup)) = pileups.next() {
@@ -54,8 +54,7 @@ pub fn bam_parse(args: &CommandArgs) {
 
         let fasta_info = fasta_index.get(reference_name.as_str()).unwrap();
 
-        // reference nucleotide as u8
-        // NOTE - possible improvement - extract context window and let ref_nt = middle value.
+        // reference nucleotide.
         let ref_nt = &fasta_info.seq[pos as usize];
 
         let seq_len = fasta_info.length;
@@ -79,8 +78,15 @@ pub fn bam_parse(args: &CommandArgs) {
         });
 
         println!(
-            "{}\t{}\t{}\t{}\t{}\t{}\t{}",
-            "contig_name", "nt", "pos", "nt_context", "depth", "ref_cov", "deletion_fraction",
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+            "contig_name",
+            "nt",
+            "pos",
+            "nt_context",
+            "depth",
+            "ref_cov",
+            "rev_cov_abs",
+            "deletion_fraction",
         );
 
         // Alignment of a single read against a single position.
@@ -118,7 +124,7 @@ pub fn bam_parse(args: &CommandArgs) {
         let ref_frac_cov = *ref_nt_count as f32 / total_nt_count as f32;
 
         // Considering total read depth (including deletions, etc)
-        // let ref_abs_frac_cov = *ref_nt_count as f32 / depth as f32;
+        let ref_abs_frac_cov = *ref_nt_count as f32 / depth as f32;
 
         let num_deletions = map.get(&'-').unwrap();
 
@@ -126,13 +132,14 @@ pub fn bam_parse(args: &CommandArgs) {
 
         if ref_frac_cov < args.min_het_frequency {
             println!(
-                "{}\t{}\t{}\t{}\t{}\t{}\t{}",
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
                 reference_name,
                 ref_nt_char,
                 pos,
                 String::from_utf8(context.to_vec()).unwrap(),
                 depth,
                 ref_frac_cov,
+                ref_abs_frac_cov,
                 deletion_fraction,
             );
             std::io::stdout().flush().unwrap();
