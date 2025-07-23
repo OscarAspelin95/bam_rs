@@ -1,6 +1,5 @@
 use rust_htslib::{bam, bam::Read, faidx};
 use std::cmp::{max, min};
-use std::io::Write;
 use std::{collections::HashMap, hash::RandomState};
 
 use log::info;
@@ -28,14 +27,27 @@ pub fn bam_parse(args: &CommandArgs) {
 
     let fasta_index = index_fasta(&faidx_reader, &seq_names);
 
-    // TODO - use rayon for multiprocessing.
-    // to make this work, use channel to send results.
+    println!(
+        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+        "contig_name",
+        "nt",
+        "pos",
+        "nt_context",
+        "depth",
+        "ref_cov",
+        "rev_cov_abs",
+        "deletion_fraction",
+        "A",
+        "T",
+        "C",
+        "G",
+    );
 
     // A given position in the reference sequence.
     while let Some(Ok(pileup)) = pileups.next() {
+        // Skip low coverage positions.
         let depth = pileup.depth() as usize;
 
-        // Skip low coverage regions.
         if depth < args.min_read_depth as usize {
             continue;
         }
@@ -70,33 +82,19 @@ pub fn bam_parse(args: &CommandArgs) {
 
         // Hashmap for nt counts.
         let random_state = RandomState::new();
-        let mut map = HashMap::with_capacity_and_hasher(NTS.len(), random_state);
+        let mut map: HashMap<char, usize> =
+            HashMap::with_capacity_and_hasher(NTS.len(), random_state);
 
         // Initialize zero count hashmap for nts.
         NTS.iter().for_each(|nt| {
-            map.insert(nt, 0 as usize);
+            map.insert(*nt, 0 as usize);
         });
-
-        println!(
-            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
-            "contig_name",
-            "nt",
-            "pos",
-            "nt_context",
-            "depth",
-            "ref_cov",
-            "rev_cov_abs",
-            "deletion_fraction",
-        );
 
         // Alignment of a single read against a single position.
         for alignment in pileup.alignments() {
             // We just increment num deletions and then skip to next alignment
             if alignment.is_del() || alignment.is_refskip() {
-                match map.get_mut(&'-') {
-                    Some(x) => *x += 1,
-                    _ => panic!("Deletion key does not exist in lookup table."),
-                }
+                map.entry('-').and_modify(|c| *c += 1).or_insert(1);
                 continue;
             };
 
@@ -116,33 +114,38 @@ pub fn bam_parse(args: &CommandArgs) {
             }
         }
 
+        // Total reference nucleotide in position.
         let ref_nt_count = map.get(&ref_nt_char).unwrap();
 
+        // Total nucleotides (reference and non-reference).
         let total_nt_count: usize = map.values().sum();
 
-        // Only considering nucleotides A/T/C/G/N
+        // Reference coverage only considering nucleotides.
         let ref_frac_cov = *ref_nt_count as f32 / total_nt_count as f32;
 
-        // Considering total read depth (including deletions, etc)
+        // Reference coverage also considering insertions and deletions.
         let ref_abs_frac_cov = *ref_nt_count as f32 / depth as f32;
 
+        // Calculate deletion fraction (relevant for Nanopore alignments).
         let num_deletions = map.get(&'-').unwrap();
-
         let deletion_fraction = *num_deletions as f32 / depth as f32;
 
-        if ref_frac_cov < args.min_het_frequency {
+        if ref_frac_cov < (1.0 - args.min_het_frequency) {
             println!(
-                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
                 reference_name,
                 ref_nt_char,
                 pos,
-                String::from_utf8(context.to_vec()).unwrap(),
+                std::str::from_utf8(context).unwrap(),
                 depth,
                 ref_frac_cov,
                 ref_abs_frac_cov,
                 deletion_fraction,
+                map.get(&'A').unwrap(),
+                map.get(&'T').unwrap(),
+                map.get(&'C').unwrap(),
+                map.get(&'G').unwrap()
             );
-            std::io::stdout().flush().unwrap();
         }
     }
 }
