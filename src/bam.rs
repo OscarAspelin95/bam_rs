@@ -13,6 +13,8 @@ const NTS: [char; 6] = ['A', 'T', 'C', 'G', 'N', '-'];
 pub fn bam_parse(args: &CommandArgs) {
     // Bam reading
     let mut bam = bam::Reader::from_path(&args.bam).expect("Failed to read BAM file {bam_test}.");
+    bam.set_threads(args.threads).unwrap();
+
     let mut pileups = bam.pileup();
 
     // We need to read the indexed fasta

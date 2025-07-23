@@ -19,6 +19,9 @@ pub struct CommandArgs {
     #[arg(long, default_value = "10",  value_parser= clap::value_parser!(u8).range(1..), help = "Only consider positions with at least this depth.")]
     pub min_read_depth: u8,
 
+    #[arg(short, long, default_value_t = 8)]
+    pub threads: usize,
+
     #[arg(
         long,
         default_value_t = 0.1,
