@@ -1,8 +1,7 @@
+use log::info;
 use rust_htslib::{bam, bam::Read, faidx};
 use std::cmp::{max, min};
 use std::{collections::HashMap, hash::RandomState};
-
-use log::info;
 
 use crate::args::CommandArgs;
 use crate::fasta::index_fasta;
@@ -75,6 +74,7 @@ pub fn bam_parse(args: &CommandArgs) {
         let context_start: usize = max(pos as i32 - args.num_flanking_bases as i32, 0) as usize;
         let context_end: usize =
             min(pos + 1 + (args.num_flanking_bases as u32), seq_len as u32) as usize;
+
         let context = &fasta_info.seq[context_start..context_end];
 
         // convert to base.
@@ -92,6 +92,10 @@ pub fn bam_parse(args: &CommandArgs) {
 
         // Alignment of a single read against a single position.
         for alignment in pileup.alignments() {
+            if alignment.record().is_unmapped() {
+                continue;
+            }
+
             // We just increment num deletions and then skip to next alignment
             if alignment.is_del() || alignment.is_refskip() {
                 map.entry('-').and_modify(|c| *c += 1).or_insert(1);
@@ -103,7 +107,12 @@ pub fn bam_parse(args: &CommandArgs) {
                 .qpos()
                 .expect("Failed to extract read position in read position.");
 
-            // read base
+            // Apparently, there are records where seq len is zero.
+            // Not sure what this about, need to browse htslib reference.
+            if alignment.record().seq_len() == 0 {
+                continue;
+            }
+
             let base = alignment.record().seq()[read_pos];
 
             let read_nt = u8_to_nt(&base).unwrap();
