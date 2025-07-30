@@ -62,6 +62,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "bam_rs"
+version = "0.0.1"
+dependencies = [
+ "clap",
+ "fxhash",
+ "log",
+ "rayon",
+ "rust-htslib",
+ "simple_logger",
+ "thiserror 2.0.12",
+]
+
+[[package]]
 name = "bindgen"
 version = "0.69.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -698,19 +711,6 @@ dependencies = [
  "openssl-src",
  "pkg-config",
  "vcpkg",
-]
-
-[[package]]
-name = "parse_bam"
-version = "0.1.0"
-dependencies = [
- "clap",
- "fxhash",
- "log",
- "rayon",
- "rust-htslib",
- "simple_logger",
- "thiserror 2.0.12",
 ]
 
 [[package]]
