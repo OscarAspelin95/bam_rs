@@ -1,5 +1,5 @@
 # bam_rs
-Script for finding heterogenous alignment positions in a BAM file (suitable for Nanopore alignments).
+Find heterogenous alignment positions in a BAM file (suitable for Nanopore alignments).
 
 ## Requirements
 - Linux OS (Ubuntu 24.04.2)
