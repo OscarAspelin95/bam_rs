@@ -9,7 +9,6 @@ use args::get_args;
 mod fasta;
 mod utils;
 
-/// TODO - change to output file instead of writing to stdout.
 fn main() {
     SimpleLogger::new().init().unwrap();
     let args = get_args();

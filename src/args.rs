@@ -4,6 +4,9 @@ use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(
+    name = "bam_rs",
+    version,
+    about = "Find heterogenous alignment positions in BAM files.",
     long_about = "Parses a BAM file of aligned Nanopore reads, outputting heterogenous positions."
 )]
 pub struct CommandArgs {
@@ -25,17 +28,23 @@ pub struct CommandArgs {
     #[arg(
         long,
         default_value_t = 0.1,
+        value_parser = validate_het_frequency,
         help = "Only consider heterogenous position with this fraction or more. E.g., 0.1 means including positions where >=10% of the nucleotides are non reference."
     )]
     pub min_het_frequency: f32,
 }
 
-pub fn get_args() -> CommandArgs {
-    let args = CommandArgs::parse();
-
-    if args.min_het_frequency < 0.0 || args.min_het_frequency > 1.0 {
-        panic!("Min het frequency must be between 0.0 and 1.0");
+fn validate_het_frequency(s: &str) -> Result<f32, String> {
+    let value: f32 = s
+        .parse()
+        .map_err(|_| format!("'{s}' is not a valid number"))?;
+    if !(0.0..=1.0).contains(&value) {
+        Err("min_het_frequency must be between 0.0 and 1.0".to_string())
+    } else {
+        Ok(value)
     }
+}
 
-    return args;
+pub fn get_args() -> CommandArgs {
+    CommandArgs::parse()
 }

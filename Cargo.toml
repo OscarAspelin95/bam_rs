@@ -2,6 +2,12 @@
 name = "bam_rs"
 version = "0.0.1"
 edition = "2024"
+authors = ["oscar.aspelin@gmail.com"]
+description = "Find heterogenous alignment positions in BAM files."
+license = "Apache-2.0"
+repository = "https://github.com/OscarAspelin95/bam_rs"
+keywords = ["bioinformatics", "bam", "nanopore"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 rust-htslib = { version = "0.49.0" }

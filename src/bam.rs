@@ -29,19 +29,7 @@ pub fn bam_parse(args: &CommandArgs) {
     let fasta_index = index_fasta(&faidx_reader, &seq_names);
 
     println!(
-        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
-        "contig_name",
-        "nt",
-        "pos",
-        "nt_context",
-        "depth",
-        "ref_cov",
-        "rev_cov_abs",
-        "deletion_fraction",
-        "A",
-        "T",
-        "C",
-        "G",
+        "contig_name\tnt\tpos\tnt_context\tdepth\tref_cov\trev_cov_abs\tdeletion_fraction\tA\tT\tC\tG"
     );
 
     // A given position in the reference sequence.
@@ -80,7 +68,7 @@ pub fn bam_parse(args: &CommandArgs) {
         let context = &fasta_info.seq[context_start..context_end];
 
         // convert to base.
-        let ref_nt_char = u8_to_nt(&ref_nt).unwrap();
+        let ref_nt_char = u8_to_nt(ref_nt).unwrap();
 
         // Hashmap for nt counts.
         let random_state = RandomState::new();
@@ -89,7 +77,7 @@ pub fn bam_parse(args: &CommandArgs) {
 
         // Initialize zero count hashmap for nts.
         NTS.iter().for_each(|nt| {
-            map.insert(*nt, 0 as usize);
+            map.insert(*nt, 0_usize);
         });
 
         // Alignment of a single read against a single position.
