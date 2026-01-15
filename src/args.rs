@@ -26,6 +26,13 @@ pub struct CommandArgs {
     pub threads: usize,
 
     #[arg(
+        short,
+        long,
+        help = "Output file path. If not provided, writes to stdout."
+    )]
+    pub output: Option<PathBuf>,
+
+    #[arg(
         long,
         default_value_t = 0.1,
         value_parser = validate_het_frequency,

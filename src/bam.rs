@@ -1,6 +1,8 @@
 use log::info;
 use rust_htslib::{bam, bam::Read, faidx};
 use std::cmp::{max, min};
+use std::fs::File;
+use std::io::{self, BufWriter, Write};
 use std::{collections::HashMap, hash::RandomState};
 
 use crate::args::CommandArgs;
@@ -28,9 +30,20 @@ pub fn bam_parse(args: &CommandArgs) {
 
     let fasta_index = index_fasta(&faidx_reader, &seq_names);
 
-    println!(
+    // Create writer - either to file or stdout
+    let mut writer: BufWriter<Box<dyn Write>> = match &args.output {
+        Some(path) => {
+            let file = File::create(path).expect("Failed to create output file");
+            BufWriter::new(Box::new(file))
+        }
+        None => BufWriter::new(Box::new(io::stdout())),
+    };
+
+    writeln!(
+        writer,
         "contig_name\tnt\tpos\tnt_context\tdepth\tref_cov\trev_cov_abs\tdeletion_fraction\tA\tT\tC\tG"
-    );
+    )
+    .expect("Failed to write header");
 
     // A given position in the reference sequence.
     while let Some(Ok(pileup)) = pileups.next() {
@@ -130,7 +143,8 @@ pub fn bam_parse(args: &CommandArgs) {
         let deletion_fraction = *num_deletions as f32 / depth as f32;
 
         if ref_frac_cov < (1.0 - args.min_het_frequency) {
-            println!(
+            writeln!(
+                writer,
                 "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
                 reference_name,
                 ref_nt_char,
@@ -144,7 +158,10 @@ pub fn bam_parse(args: &CommandArgs) {
                 map.get(&'T').unwrap(),
                 map.get(&'C').unwrap(),
                 map.get(&'G').unwrap()
-            );
+            )
+            .expect("Failed to write output");
         }
     }
+
+    writer.flush().expect("Failed to flush output");
 }

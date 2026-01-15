@@ -25,6 +25,7 @@ bam_rs --bam <aln.bam> --fasta <sequences.fasta>
 
 | Argument | Default | Description |
 |----------|---------|-------------|
+| `--output` | stdout | Output file path. If not provided, writes to stdout. |
 | `--num-flanking-bases` | 2 | How many reference bases to extract around the heterogenous position. |
 | `--min-read-depth` | 10 | Min depth for candidate position. |
 | `--threads` | 8 | Num threads to use for Rust HTSlib. |
