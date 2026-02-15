@@ -6,28 +6,27 @@ use std::io::{self, BufWriter, Write};
 use std::{collections::HashMap, hash::RandomState};
 
 use crate::args::CommandArgs;
+use crate::errors::AppError;
 use crate::fasta::index_fasta;
-use crate::utils::u8_to_nt;
+use crate::utils::{NTS, u8_to_nt};
 
-// We want a lookup table for mapping ascii to nucleotides.
-const NTS: [char; 6] = ['A', 'T', 'C', 'G', 'N', '-'];
+pub fn bam_parse(args: &CommandArgs) -> Result<(), AppError> {
+    if !&args.bam.exists() {
+        return Err(AppError::FileDoesNotExistError(
+            args.bam.display().to_string(),
+        ));
+    }
 
-pub fn bam_parse(args: &CommandArgs) {
-    // Bam reading
-    let mut bam = bam::Reader::from_path(&args.bam).expect("Failed to read BAM file {bam_test}.");
-    bam.set_threads(args.threads).unwrap();
+    info!("Reading bam file...");
+    let mut bam = bam::Reader::from_path(&args.bam)?;
+    bam.set_threads(args.threads)
+        .expect("Failed to set num threads for htlib bam reader.");
 
     let mut pileups = bam.pileup();
 
-    // We need to read the indexed fasta
     info!("Parsing indexed fasta file...");
-    let faidx_reader =
-        faidx::Reader::from_path(&args.fasta).expect("Failed to read fasta file {fasta_test}.");
-
-    let seq_names: Vec<String> = faidx_reader
-        .seq_names()
-        .expect("Failed to extract reference names from {fasta_test}.");
-
+    let faidx_reader = faidx::Reader::from_path(&args.fasta)?;
+    let seq_names: Vec<String> = faidx_reader.seq_names()?;
     let fasta_index = index_fasta(&faidx_reader, &seq_names);
 
     // Create writer - either to file or stdout
@@ -45,32 +44,26 @@ pub fn bam_parse(args: &CommandArgs) {
     )
     .expect("Failed to write header");
 
-    // A given position in the reference sequence.
+    // Each nucleotide position.
     while let Some(Ok(pileup)) = pileups.next() {
-        // Skip low coverage positions.
         let depth = pileup.depth() as usize;
-
         if depth < args.min_read_depth as usize {
             continue;
         }
-
-        // Reference related.
-        let pos = pileup.pos();
-        let reference_id = pileup.tid();
 
         // Extract reference nucleotide at this position.
         // NOTE - It is yet unknown what is the most efficient way to extract a nt from a given
         // reference name and position. The current implementation has a pre-constructed hashmap
         // of structure {"name"; seq}, for which we extract the nt per reference name and position.
-        let reference_name = faidx_reader
-            .seq_name(reference_id as i32)
-            .expect("Failed to extract reference name from reference id {reference_id}");
-
-        let fasta_info = fasta_index.get(reference_name.as_str()).unwrap();
+        let pos = pileup.pos();
+        let reference_id = pileup.tid();
+        let reference_name = faidx_reader.seq_name(reference_id as i32)?;
+        let fasta_info = fasta_index
+            .get(reference_name.as_str())
+            .ok_or(AppError::MissingFastaID(reference_name.clone()))?;
 
         // reference nucleotide.
         let ref_nt = &fasta_info.seq[pos as usize];
-
         let seq_len = fasta_info.length;
 
         // For the given position, extract flanking bases to provide context.
@@ -88,7 +81,7 @@ pub fn bam_parse(args: &CommandArgs) {
         let mut map: HashMap<char, usize> =
             HashMap::with_capacity_and_hasher(NTS.len(), random_state);
 
-        // Initialize zero count hashmap for nts.
+        // We can probably re-use this instead of re-creating it several times.
         NTS.iter().for_each(|nt| {
             map.insert(*nt, 0_usize);
         });
@@ -108,7 +101,7 @@ pub fn bam_parse(args: &CommandArgs) {
             // Position in read.
             let read_pos = alignment
                 .qpos()
-                .expect("Failed to extract read position in read position.");
+                .expect("unreachable, we have checked for .id_del() and is_refskip().");
 
             // Apparently, there are records where seq len is zero.
             // Not sure what this about, need to browse htslib reference.
@@ -117,12 +110,11 @@ pub fn bam_parse(args: &CommandArgs) {
             }
 
             let base = alignment.record().seq()[read_pos];
-
             let read_nt = u8_to_nt(&base).unwrap();
 
             match map.get_mut(&read_nt) {
                 Some(x) => *x += 1,
-                _ => panic!("Invalid nt lookup: {read_nt}"),
+                _ => continue,
             }
         }
 
@@ -154,14 +146,16 @@ pub fn bam_parse(args: &CommandArgs) {
                 ref_frac_cov,
                 ref_abs_frac_cov,
                 deletion_fraction,
-                map.get(&'A').unwrap(),
-                map.get(&'T').unwrap(),
-                map.get(&'C').unwrap(),
-                map.get(&'G').unwrap()
+                map.get(&'A').expect("Missing `A`"),
+                map.get(&'T').expect("Missing `T`"),
+                map.get(&'C').expect("Missing `C`"),
+                map.get(&'G').expect("Missing `G`")
             )
             .expect("Failed to write output");
         }
     }
 
     writer.flush().expect("Failed to flush output");
+
+    Ok(())
 }
