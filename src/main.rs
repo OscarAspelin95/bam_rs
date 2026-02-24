@@ -1,22 +1,31 @@
+mod args;
+mod errors;
+mod pileup;
+mod reference;
+mod seq;
+
+use crate::args::Args;
+use crate::errors::AppError;
+use crate::pileup::parse;
+use clap::Parser;
+use log::{self, info};
 use simple_logger::SimpleLogger;
 
-mod bam;
-use bam::bam_parse;
-
-mod args;
-use args::get_args;
-
-use crate::errors::AppError;
-
-mod errors;
-mod fasta;
-mod utils;
-
 fn main() -> Result<(), AppError> {
-    SimpleLogger::new().init().unwrap();
-    let args = get_args();
+    SimpleLogger::new()
+        .init()
+        .expect("failed to initialize logger.");
 
-    bam_parse(&args)?;
+    let args = Args::parse();
+
+    info!("parsing BAM...");
+    parse(
+        &args.bam,
+        &args.fasta,
+        &args.outfile,
+        args.context,
+        args.min_alternate_frac_canonical,
+    )?;
 
     Ok(())
 }

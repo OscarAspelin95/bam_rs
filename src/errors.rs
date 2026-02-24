@@ -2,15 +2,21 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum AppError {
-    #[error("file does not exist: {0}")]
+    #[error("File does not exist: `{0}`")]
     FileDoesNotExistError(String),
 
-    #[error("Htslib error: {0}")]
-    HtslibError(#[from] rust_htslib::errors::Error),
+    #[error("Invalid file extension: `{0}`")]
+    InvalidFileExtensionError(String),
 
-    #[error("Invalid nucleotide: {0}")]
-    InvalidNtError(u8),
+    #[error("Reference mismatch: {0}")]
+    ReferenceMismatchError(String),
 
-    #[error("Missing FASTA id: {0}")]
-    MissingFastaID(String),
+    #[error("HtsLib error: {0}")]
+    HtsLibError(#[from] rust_htslib::errors::Error),
+
+    #[error("FASTA index build error: {0}")]
+    FaidxBuildError(String),
+
+    #[error("IO error: {0}")]
+    IoError(#[from] std::io::Error),
 }

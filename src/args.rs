@@ -1,57 +1,62 @@
-use clap::Parser;
-
 use std::path::PathBuf;
 
-#[derive(Parser, Debug)]
-#[command(
-    name = "bam_rs",
-    version,
-    about = "Find heterogenous alignment positions in BAM files.",
-    long_about = "Parses a BAM file of aligned Nanopore reads, outputting heterogenous positions."
-)]
-pub struct CommandArgs {
-    #[arg(short, long, help = "Path to BAM file.")]
-    pub bam: PathBuf,
+use clap::Parser;
 
-    #[arg(short, long, help = "Path to FASTA file.")]
-    pub fasta: PathBuf,
+use crate::errors::AppError;
 
-    #[arg(long, default_value = "2", value_parser= clap::value_parser!(u8).range(1..10), help="Extract this many reference nucleotides to the left and right of the heterogenous position")]
-    pub num_flanking_bases: u8,
+fn validate_bam(bam: &str) -> Result<PathBuf, AppError> {
+    let path = PathBuf::from(bam);
 
-    #[arg(long, default_value = "10",  value_parser= clap::value_parser!(u8).range(1..), help = "Only consider positions with at least this depth.")]
-    pub min_read_depth: u8,
+    if !path.exists() {
+        return Err(AppError::FileDoesNotExistError(format!(
+            "`{}` does not exist",
+            path.display()
+        )));
+    }
 
-    #[arg(short, long, default_value_t = 8)]
-    pub threads: usize,
-
-    #[arg(
-        short,
-        long,
-        help = "Output file path. If not provided, writes to stdout."
-    )]
-    pub output: Option<PathBuf>,
-
-    #[arg(
-        long,
-        default_value_t = 0.1,
-        value_parser = validate_het_frequency,
-        help = "Only consider heterogenous position with this fraction or more. E.g., 0.1 means including positions where >=10% of the nucleotides are non reference."
-    )]
-    pub min_het_frequency: f32,
-}
-
-fn validate_het_frequency(s: &str) -> Result<f32, String> {
-    let value: f32 = s
-        .parse()
-        .map_err(|_| format!("'{s}' is not a valid number"))?;
-    if !(0.0..=1.0).contains(&value) {
-        Err("min_het_frequency must be between 0.0 and 1.0".to_string())
-    } else {
-        Ok(value)
+    match path.extension().and_then(|p| p.to_str()) {
+        Some("bam") => Ok(path),
+        _ => Err(AppError::InvalidFileExtensionError(
+            path.display().to_string(),
+        )),
     }
 }
 
-pub fn get_args() -> CommandArgs {
-    CommandArgs::parse()
+fn validate_fasta(fasta: &str) -> Result<PathBuf, AppError> {
+    let path = PathBuf::from(fasta);
+
+    if !path.exists() {
+        return Err(AppError::FileDoesNotExistError(format!(
+            "`{}` does not exist",
+            path.display()
+        )));
+    }
+
+    match path.extension().and_then(|p| p.to_str()) {
+        Some("fa") | Some("fasta") | Some("fna") => Ok(path),
+        _ => Err(AppError::InvalidFileExtensionError(
+            path.display().to_string(),
+        )),
+    }
+}
+
+#[derive(Debug, Parser)]
+pub struct Args {
+    #[arg(short, long, value_parser = validate_bam)]
+    pub bam: PathBuf,
+
+    #[arg(short, long, value_parser = validate_fasta)]
+    pub fasta: PathBuf,
+
+    #[arg(short, long)]
+    pub outfile: PathBuf,
+
+    /// Number of reference bases to include on each side of the pileup position in the `ref` column.
+    #[arg(short = 'c', long, default_value_t = 0)]
+    pub context: usize,
+
+    /// Only output positions where frac_aln_canonical is less than or equal to this value.
+    /// Useful for filtering to heterogeneous positions where reads disagree with the reference.
+    #[arg(long)]
+    pub min_alternate_frac_canonical: Option<f64>,
 }
