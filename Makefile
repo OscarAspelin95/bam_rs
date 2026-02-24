@@ -38,7 +38,7 @@ build-native:
 
 # --
 docs:
-	@cargo doc -p fastq_rs --open
+	@cargo doc -p bam_rs --open
 
 # --
 update:
