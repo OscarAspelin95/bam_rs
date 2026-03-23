@@ -130,7 +130,7 @@ pub fn parse(
         writer
             .write_all(
                 format!(
-                    "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+                    "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.4}\t{:.4}\t{:.4}\t{}\n",
                     ref_name,
                     pos,
                     pileup.depth(),
