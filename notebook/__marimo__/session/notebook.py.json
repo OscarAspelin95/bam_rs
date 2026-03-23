@@ -1,0 +1,185 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.21.1",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "73be3991a85138a8dc6e1f5a0a7a65cf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"picking-file\">Picking File</h1>\n<span class=\"paragraph\">We'll use the built in file browser to access our .tsv file.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "9e0d5cb47ad1fcd229d91742f38aa048",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='vblA-0' random-id='8f730cd2-8ba9-cccf-3a71-3b4a4bff31be'><marimo-file-browser data-initial-value='[]' data-label='null' data-initial-path='&quot;/home/oscar/github/bam_rs/notebook&quot;' data-selection-mode='&quot;file&quot;' data-filetypes='[]' data-multiple='true' data-restrict-navigation='false'></marimo-file-browser></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "5acc5992247e6d8a99c205d99f5563fa",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "3e74b2fa07f6addb25e628636ae83486",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "d4b04593855c6d319b63e1c24186f118",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "4846e15cda59f8a8aaa35dd122e2829b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"plotting-a-dataframe\">Plotting a DataFrame</h1>\n<span class=\"paragraph\">Here, we use altair to produce some nice, interactive plots.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "309ed94de7654e590b04b1d8c3d5c4dd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"visualizing-coverage\">Visualizing coverage</h2>\n<span class=\"paragraph\">We will plot sequencing depth as a function of position. By creating an interactive input, we can decide what data points we want to include. Change the <strong>start</strong>, <strong>end</strong> and <strong>depth</strong> thresholds to view the impact.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "3e082f175ff55495adbd06685cebba9a",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "43be64ea8f94b53aca3557602f6723dc",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "cc3741043363c947de0c9dffc8e9ee95",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "d6241b8e12275a7d588e45154e36c7d6",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "8278c9140b1fc9606a1b783705827544",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"visualizing-base-quality\">Visualizing base quality</h2>\n<span class=\"paragraph\">We have the mean base quality per reference base. We can visualize this to look for potential bias.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "1d6ed3b9d370656029df61b9f7b69e5f",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "41a8f110f98086162afefd8d450a2da8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"visualizing-depth\">Visualizing depth</h2>\n<span class=\"paragraph\">We have the depth per reference base. We can visualize this to look for potential bias.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "ee52eb27d7f7346054b7499311a54549",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "92be98c668f3e155f9a868817355963c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"identifying-deletions\">Identifying Deletions</h2>\n<span class=\"paragraph\">Maybe, we find it interesting to find positions with a large deletion fraction. We can visualize this with a scatter plot of the deletion fraction against sequencing depth.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "3a46a48c23af8afe65cea1cfc4a5ad6d",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "91a320de34791bc9539eb8a51f4d18ae",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "82e1f43adb33243528a57b607346c507",
+      "outputs": [],
+      "console": []
+    }
+  ]
+}
