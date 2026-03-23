@@ -56,3 +56,11 @@ The output is a tab-separated file with one row per covered position:
 
 ## Development
 Common development tasks are available via the `Makefile`
+
+## Visualizing
+The `notebook` directory contains a marimo notebook for interactively visualizing the output file (see a few examples below). Note that this requires the [uv](https://github.com/astral-sh/uv) package manager (see `notebook/README.md` for details).
+
+<div>
+<img src = "./assets/coverage.png" width=800px></img>
+<img src = "./assets/deletions.png" width=800px></img>
+</div>

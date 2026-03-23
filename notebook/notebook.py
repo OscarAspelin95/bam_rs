@@ -62,6 +62,7 @@ def _(file_picker, num_positions_input):
 
     import polars as pl
 
+
     def get_tsv() -> Path:
         match file_picker.value:
             case [file_info]:
@@ -71,7 +72,10 @@ def _(file_picker, num_positions_input):
                 return file_info.path
 
             case _ as other:
-                raise ValueError(f"Invalid input: `{other}`. Must be exactly one file.")
+                raise ValueError(
+                    f"Invalid input: `{other}`. Must be exactly one file."
+                )
+
 
     _tsv = get_tsv()
 
@@ -280,7 +284,7 @@ def _(alt, del_input, df, mo, pl):
     )
 
     _chart = (
-        alt.Chart(_alt_df, width=550)
+        alt.Chart(_alt_df, width=550, title="Deletions")
         .mark_point()
         .encode(x="depth", y="frac_deletion", color="ref")
     )
