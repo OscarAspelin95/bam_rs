@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 clap = {version = "4.5.60", features = ["derive"]}
 lazy_static = "1.5.0"
-log = "0.4.29"
+log = "0.4.30"
 rust-htslib = "1.0.0"
 simple_logger = "5.2.0"
 thiserror = "2.0.18"
